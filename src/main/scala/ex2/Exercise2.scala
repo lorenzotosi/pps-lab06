@@ -2,8 +2,6 @@ package ex2
 
 import ex2.Exercise2.Question.*
 
-import scala.collection.immutable.HashSet
-
 object Exercise2 :
   /**
    * For each article, the reviewer has to reply to all the following questions
