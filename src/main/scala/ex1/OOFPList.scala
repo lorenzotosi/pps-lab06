@@ -50,10 +50,11 @@ enum List[A]:
   def length(): Int = foldLeft(0)((b, _) => b + 1)
 
   def zipWithIndex: List[(A, Int)] =
-    foldRight((Nil(): List[(A, Int)], length() - 1)) ( (elem, acc) =>
+    val len = length() - 1
+    foldRight((Nil(): List[(A, Int)], len)) { (elem, acc) =>
       val (list, index) = acc
       ((elem, index) :: list, index - 1)
-    )._1
+    }._1
 
   def partition(predicate: A => Boolean): (List[A], List[A]) = //(filter(predicate), filter(!predicate(_)))
     foldRight((Nil(), Nil()))((x, y) =>
@@ -69,10 +70,10 @@ enum List[A]:
 //    var predTrue = true
 //    foldLeft((Nil(), Nil()))( (x, y) =>
 //      if predicate(y) && predTrue
-//        then (x._1.append(List.apply(y)), x._2)
+//        then (y :: x._1, x._2)
 //      else
 //        predTrue = false;
-//        (x._1, x._2.append(List.apply(y))))
+//        (x._1, y :: x._2))
 
   def takeRight(n: Int): List[A] = foldRight((Nil(): List[A], 0)) { (x, acc) =>
     val (list, count) = acc
