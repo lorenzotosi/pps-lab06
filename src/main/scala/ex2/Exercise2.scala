@@ -55,7 +55,7 @@ object Exercise2 :
      *
      * @return the set of accepted articles
      */
-    def acceptedArticles: HashSet[Int]
+    def acceptedArticles: Set[Int]
 
     /**
      * @return accepted articles as a reviews of pairs article+averageFinalScore, ordered from worst to best based on averageFinalScore
@@ -82,17 +82,33 @@ object Exercise2 :
         CONFIDENCE -> confidence,
         FINAL -> fin)
       ConferenceRewiewingImpl((article, map) :: reviews)
-    
-    override def orderedScores(article: Int, question: Question): List[Int] = 
-      reviews.filter(p => p._1 == article).map(p => p._2(question)).sorted()
 
-    override def averageFinalScore(article: Int): Double = ???
+    override def orderedScores(article: Int, question: Question): List[Int] =
+      reviews.filter(_._1 == article).map(_._2(question)).sorted()
 
-    override def acceptedArticles: HashSet[Int] = ???
+    override def averageFinalScore(article: Int): Double =
+      val x = reviews.filter(_._1 == article).map(_._2(FINAL))
+      x.sum.toDouble / x.length
 
-    override def sortedAcceptedArticles: List[(Int, Double)] = ???
+    private def accepted(article: Int): Boolean = {
+      averageFinalScore(article) > 5.0 &&
+        reviews
+          .filter(_._1 == article)
+          .flatMap(_._2)
+          .exists { case (key, value) => key == RELEVANCE && value >= 8 }
+    }
 
-    override def averageWeightedFinalScoreMap: Map[Int, Double] = ???
+    override def acceptedArticles: Set[Int] = reviews.map(_._1).distinct.filter(accepted).toSet
+
+    override def sortedAcceptedArticles: List[(Int, Double)] =
+      acceptedArticles.map(x => (x, averageFinalScore(x))).toList.sorted((x1, x2) => x1._2.compareTo(x2._2))
+
+    private def averageWeightedFinalScore(article: Int) : Double =
+      val x = reviews.filter(_._1 == article).map(x => x._2(FINAL).toDouble * x._2(CONFIDENCE).toDouble / 10.0)
+      x.sum / x.length
+
+    override def averageWeightedFinalScoreMap: Map[Int, Double] =
+      reviews.map(_._1).distinct.map(a => a -> averageWeightedFinalScore(a)).toMap
 
   object ConferenceReviewing:
     def apply(): ConferenceReviewing = new ConferenceRewiewingImpl(Nil)
